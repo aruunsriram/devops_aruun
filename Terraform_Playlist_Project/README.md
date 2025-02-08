@@ -144,7 +144,3 @@ This project is a fun way to explore **DevOps tools** in a creative space like *
   - Yes! With the right API, this method works for **Apple Music, YouTube Music, etc.**  
 - **Why use Terraform for this?**  
   - It’s a great way to learn **IaC, API automation, and OAuth authentication**!  
-
----
-
-This structure makes your presentation **detailed yet easy to follow**! Let me know if you need slides or modifications. 🚀🎵
