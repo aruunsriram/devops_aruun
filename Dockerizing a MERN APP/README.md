@@ -47,8 +47,5 @@ Before running the project, ensure you have the following installed:
 
 ## ⚙️ Installation & Setup  
 
-### **1️⃣ Clone the Repository**  
-```bash
-git clone https://github.com/your-username/mern-docker.git
-cd mern-docker
+
 
