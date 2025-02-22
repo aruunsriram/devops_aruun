@@ -1,86 +1,138 @@
-# 💰 Cost Optimization Project
+# 💰 AWS Cost Optimization Using Lambda & Event-Driven Serverless Architecture  
 
-## 📌 Overview
-This project focuses on **cost optimization strategies** to reduce cloud infrastructure expenses while maintaining performance and scalability. The implementation includes **AWS cost management techniques, resource right-sizing, and automation** using Infrastructure as Code (IaC).
+## 📌 Overview  
+This project focuses on **automated cost optimization** in AWS by identifying and deleting **unused EBS snapshots** using **AWS Lambda** and an **event-driven serverless architecture**.  
 
-## 🚀 Features
-- **Automated Cost Analysis**: Uses AWS Cost Explorer & Budgets API for tracking spending.
-- **Resource Right-Sizing**: Identifies underutilized EC2, RDS, and other resources.
-- **Auto-Scaling & Scheduling**: Implements AWS Auto Scaling and scheduled resource shutdowns.
-- **Spot & Reserved Instances**: Utilizes cost-efficient EC2 pricing models.
-- **Storage Optimization**: Implements Amazon S3 lifecycle policies & EBS volume monitoring.
-- **Infrastructure as Code (IaC)**: Deploys AWS resources using Terraform for consistency.
-
-## 🛠️ Tech Stack
-- **Cloud Provider**: AWS (Amazon Web Services)
-- **Tools & Services**: AWS Cost Explorer, Budgets, EC2, RDS, S3, Lambda, CloudWatch
-- **Infrastructure as Code**: Terraform
-- **Automation**: AWS Lambda, AWS CLI, Boto3 (Python SDK)
-
-## ⚙️ Installation & Setup
-### 1️⃣ Clone the Repository
-```bash
-git clone https://github.com/your-username/cost-optimization.git
-cd cost-optimization
-```
-### 2️⃣ Configure AWS Credentials
-Ensure AWS CLI is installed and configured:
-```bash
-aws configure
-```
-### 3️⃣ Deploy Using Terraform
-```bash
-cd terraform
-terraform init
-terraform apply -auto-approve
-```
-
-## 📊 Cost Optimization Strategies
-### 1️⃣ Right-Sizing Resources
-- Identify **underutilized EC2 instances** and resize them accordingly.
-- Use **AWS Compute Optimizer** to get recommendations.
-
-### 2️⃣ Auto-Scaling & Scheduling
-- Configure **Auto Scaling Groups (ASG)** to scale resources dynamically.
-- Use AWS Lambda to **schedule on/off times** for non-production environments.
-
-### 3️⃣ Optimizing Storage Costs
-- Implement **S3 lifecycle policies** to move infrequently accessed data to **Glacier**.
-- Monitor **EBS volumes** and remove unused snapshots.
-
-### 4️⃣ Leveraging Pricing Models
-- Utilize **Spot Instances** for non-critical workloads.
-- Purchase **Reserved Instances** for long-term cost savings.
-
-## 📌 Project Structure
-```
-cost-optimization/
-│── terraform/          # Terraform configurations
-│   ├── main.tf        # AWS infrastructure code
-│── scripts/           # Automation scripts (Lambda, CLI, etc.)
-│── reports/           # Cost analysis reports
-│── README.md          # Project documentation
-```
-
-## 🦾 Troubleshooting
-### 🔍 Debugging Terraform Issues
-Check Terraform logs:
-```bash
-terraform plan -out=tfplan
-```
-### ❗ AWS API Limitations
-If hitting rate limits, implement exponential backoff in API requests.
-
-## 🎯 Future Enhancements
-- **AI-driven cost analysis** for predictive cost trends.
-- **Multi-cloud support** for GCP & Azure.
-
-## 📝 License
-This project is licensed under the **MIT License**.
-
-## 🤝 Contributing
-Feel free to submit pull requests for improvements and additional cost-saving strategies!
+Many AWS users accumulate **stale EBS snapshots**, leading to unnecessary storage costs. This solution helps **DevOps and Cloud Engineers** save costs by **automating stale resource management** without manual intervention.  
 
 ---
-🚀 *Start optimizing your cloud costs today!*
 
+## 🚀 Features  
+✅ **Automated Cleanup** – Identifies and deletes unneeded **EBS snapshots**.  
+✅ **Event-Driven Execution** – Uses **AWS Lambda** triggered by a **CloudWatch Event Rule**.  
+✅ **Serverless Architecture** – Fully managed, no need for dedicated infrastructure.  
+✅ **Cost Optimization** – Prevents unnecessary AWS storage costs.  
+✅ **Logging & Monitoring** – Integrated with **AWS CloudWatch** for logging and debugging.  
+✅ **Secure Execution** – Runs with **IAM role permissions** for restricted access.  
+
+---
+
+## 🛠️ Tech Stack  
+- **Cloud Provider**: AWS  
+- **Services Used**: Lambda, CloudWatch, EC2, S3, IAM, SNS  
+- **Programming Language**: Python (Boto3 SDK)  
+- **Automation**: AWS Lambda & CloudWatch Event Rules  
+- **Infrastructure as Code (IaC)**: Terraform (Optional)  
+
+---
+
+## ⚙️ Setup & Deployment  
+
+### 1️⃣ Clone the Repository  
+```sh  
+git clone https://github.com/yourusername/aws-cost-optimization.git  
+cd aws-cost-optimization  
+```  
+
+### 2️⃣ Install Required Dependencies  
+```sh  
+pip install boto3 awscli  
+```  
+
+### 3️⃣ Configure AWS Credentials  
+```sh  
+aws configure  
+```  
+Provide:  
+- AWS **Access Key ID**  
+- AWS **Secret Access Key**  
+- Default **Region**  
+
+### 4️⃣ Deploy AWS Lambda Function  
+
+#### ✅ **Create IAM Role for Lambda**  
+1. Go to **AWS IAM Console** → **Roles** → **Create Role**.  
+2. Choose **AWS Service** → Select **Lambda**.  
+3. Attach **AmazonEC2ReadOnlyAccess** and **AmazonEC2FullAccess** policies.  
+4. **Create the role** and note down the **Role ARN**.  
+
+#### ✅ **Upload & Configure Lambda Function**  
+1. **Zip the Python script (`lambda_function.py`)**:  
+   ```sh
+   zip function.zip lambda_function.py
+   ```  
+2. Go to **AWS Lambda Console** → **Create Function** → **Author from scratch**.  
+3. Assign the previously created **IAM Role**.  
+4. Upload the **`function.zip`** file.  
+5. Set up **CloudWatch Event Rule** to trigger Lambda every **24 hours**.
+
+---
+
+## 🔄 How It Works  
+1. **Lambda retrieves all EBS snapshots** in the AWS account.  
+2. **It checks if the snapshots are attached to any active EC2 instances.**  
+3. **If a snapshot is unused, it is automatically deleted** to free up storage and reduce AWS costs.  
+4. **CloudWatch logs execution details** and sends notifications (optional via SNS).  
+
+---
+
+## 📝 Example Code Snippet  
+
+This AWS Lambda function fetches all EBS snapshots and **deletes those that are no longer attached to an active EC2 instance**.
+
+```python
+import boto3
+
+def lambda_handler(event, context):
+    ec2 = boto3.client('ec2')
+
+    # Get all EBS snapshots owned by the user
+    response = ec2.describe_snapshots(OwnerIds=['self'])
+
+    # Get active EC2 instances
+    instances_response = ec2.describe_instances(Filters=[{'Name': 'instance-state-name', 'Values': ['running']}])
+    active_instance_ids = set()
+
+    for reservation in instances_response['Reservations']:
+        for instance in reservation['Instances']:
+            active_instance_ids.add(instance['InstanceId'])
+
+    # Process each snapshot
+    for snapshot in response['Snapshots']:
+        snapshot_id = snapshot['SnapshotId']
+        volume_id = snapshot.get('VolumeId')
+
+        if not volume_id:
+            # Delete snapshot if not attached to any volume
+            ec2.delete_snapshot(SnapshotId=snapshot_id)
+            print(f"Deleted snapshot {snapshot_id} as it was not attached to any volume.")
+        else:
+            try:
+                volume_response = ec2.describe_volumes(VolumeIds=[volume_id])
+                if not volume_response['Volumes'][0]['Attachments']:
+                    ec2.delete_snapshot(SnapshotId=snapshot_id)
+                    print(f"Deleted snapshot {snapshot_id} as it was taken from a volume not attached to any running instance.")
+            except ec2.exceptions.ClientError as e:
+                if e.response['Error']['Code'] == 'InvalidVolume.NotFound':
+                    # Delete if the associated volume does not exist
+                    ec2.delete_snapshot(SnapshotId=snapshot_id)
+                    print(f"Deleted snapshot {snapshot_id} as its associated volume was not found.")
+```
+
+---
+
+## 🏆 Benefits  
+✅ **Reduces AWS storage costs** by removing unused snapshots.  
+✅ **Fully automated**, eliminating manual intervention.  
+✅ **Event-driven & serverless**, ensuring efficiency.  
+✅ **Improves cloud resource management** for AWS users.  
+
+---
+
+## 📢 Contributors  
+Special thanks to **Abhishek Verramalla** for guidance on AWS cost optimization strategies.  
+
+---
+
+## 📚 License  
+This project is licensed under the **MIT License** – see the [LICENSE](LICENSE) file for details.  
